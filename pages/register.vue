@@ -88,7 +88,7 @@
         <div class="flex items-start">
           <div class="flex items-center h-5">
             <input id="terms" v-model="acceptedTerms" type="checkbox"
-              class="w-4 h-4 border-gray-300 rounded text-gray-600 focus:ring-gray-500 cursor-pointer" />
+              class="custom-checkbox" />
           </div>
           <label for="terms" class="ml-3 text-sm text-gray-600 cursor-pointer">
             I agree to the

@@ -1,35 +1,27 @@
+// src/composables/consultation-plans/useGetAllConsultationPlans.ts
 import { ref } from "vue"
-import { enquiry_api } from "@/api_factory/modules/enquiry"
+import { consultationPlans_api, type ConsultationPlan } from "@/api_factory/modules/consultation-plans"
 import { useCustomToast } from "@/composables/core/useCustomToast"
 
-export const useCreateEnquiry = () => {
+export const useGetAllConsultationPlans = () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
+  const plans = ref<ConsultationPlan[]>([])
   const { showToast } = useCustomToast()
 
-  const createEnquiry = async (payload: {
-    fullName: string
-    email?: string
-    phone: string
-    message: string
-  }) => {
+  const getAllPlans = async (includeInactive?: boolean) => {
     loading.value = true
     error.value = null
     try {
-      const res = (await enquiry_api.createEnquiry(payload)) as any
+      const res = (await consultationPlans_api.getAll(includeInactive)) as any
       if (res.type !== "ERROR") {
-        showToast({
-          title: "Success",
-          message: "Enquiry created successfully",
-          toastType: "success",
-          duration: 3000,
-        })
+        plans.value = res.data
         return res.data
       } else {
         error.value = res.message
         showToast({
           title: "Error",
-          message: res.message || "Failed to create enquiry",
+          message: res.message || "Failed to fetch consultation plans",
           toastType: "error",
           duration: 3000,
         })
@@ -39,7 +31,7 @@ export const useCreateEnquiry = () => {
       error.value = err.message
       showToast({
         title: "Error",
-        message: err.message || "Failed to create enquiry",
+        message: err.message || "Failed to fetch consultation plans",
         toastType: "error",
         duration: 3000,
       })
@@ -49,5 +41,5 @@ export const useCreateEnquiry = () => {
     }
   }
 
-  return { loading, error, createEnquiry }
+  return { loading, error, plans, getAllPlans }
 }

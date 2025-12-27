@@ -7,9 +7,9 @@
         <div class="container mx-auto">
           <div class="flex justify-between items-center h-16 lg:h-20">
             <!-- Logo -->
-            <div class="text-lg font-bold text-gray-900">
+            <NuxtLink to="/" class="text-lg font-bold text-gray-900">
               Doctor Dey Consulting
-            </div>
+            </NuxtLink>
 
             <!-- Desktop Navigation -->
             <div class="hidden lg:flex items-center space-x-8 text-gray-700">

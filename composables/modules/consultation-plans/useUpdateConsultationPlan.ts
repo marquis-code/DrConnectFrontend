@@ -1,26 +1,22 @@
+// src/composables/consultation-plans/useUpdateConsultationPlan.ts
 import { ref } from "vue"
-import { enquiry_api } from "@/api_factory/modules/enquiry"
+import { consultationPlans_api, type UpdateConsultationPlanDto } from "@/api_factory/modules/consultation-plans"
 import { useCustomToast } from "@/composables/core/useCustomToast"
 
-export const useCreateEnquiry = () => {
+export const useUpdateConsultationPlan = () => {
   const loading = ref(false)
   const error = ref<string | null>(null)
   const { showToast } = useCustomToast()
 
-  const createEnquiry = async (payload: {
-    fullName: string
-    email?: string
-    phone: string
-    message: string
-  }) => {
+  const updatePlan = async (id: string, payload: UpdateConsultationPlanDto) => {
     loading.value = true
     error.value = null
     try {
-      const res = (await enquiry_api.createEnquiry(payload)) as any
+      const res = (await consultationPlans_api.update(id, payload)) as any
       if (res.type !== "ERROR") {
         showToast({
           title: "Success",
-          message: "Enquiry created successfully",
+          message: "Consultation plan updated successfully",
           toastType: "success",
           duration: 3000,
         })
@@ -29,7 +25,7 @@ export const useCreateEnquiry = () => {
         error.value = res.message
         showToast({
           title: "Error",
-          message: res.message || "Failed to create enquiry",
+          message: res.message || "Failed to update consultation plan",
           toastType: "error",
           duration: 3000,
         })
@@ -39,7 +35,7 @@ export const useCreateEnquiry = () => {
       error.value = err.message
       showToast({
         title: "Error",
-        message: err.message || "Failed to create enquiry",
+        message: err.message || "Failed to update consultation plan",
         toastType: "error",
         duration: 3000,
       })
@@ -49,5 +45,5 @@ export const useCreateEnquiry = () => {
     }
   }
 
-  return { loading, error, createEnquiry }
+  return { loading, error, updatePlan }
 }
