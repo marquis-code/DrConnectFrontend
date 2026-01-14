@@ -24,7 +24,7 @@
       <!-- Doctor Card -->
       <div class="bg-white rounded-3xl shadow-xl p-6 mb-6 border border-gray-100 animate-fadeIn">
         <div class="flex flex-col md:flex-row items-start md:items-center gap-6">
-          <div class="w-24 h-24 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center text-4xl shadow-lg">
+          <div class="w-24 h-24 rounded-2xl bg-black flex items-center justify-center text-4xl shadow-lg">
             👨‍⚕️
           </div>
           <div class="flex-1">
@@ -85,78 +85,106 @@
 
       <!-- Main Content -->
       <div class="bg-white rounded-3xl shadow-xl p-6 md:p-8 border border-gray-100">
-        <!-- Step 1: Consultation Type -->
+        <!-- Step 1: Select Consultation Plan -->
         <transition name="fade" mode="out-in">
           <div v-if="currentStep === 1" key="step1" class="space-y-8">
             <div class="text-center mb-8">
-              <h2 class="text-2xl font-bold text-slate-900 mb-3">Choose Consultation Type</h2>
-              <p class="text-slate-600">Select how you'd like to consult</p>
+              <h2 class="text-2xl font-bold text-slate-900 mb-3">Choose Consultation Plan</h2>
+              <p class="text-slate-600">Select the plan that best suits your needs</p>
             </div>
 
-            <div class="grid md:grid-cols-2 gap-6">
-              <!-- Physical -->
+            <!-- Loading State -->
+            <div v-if="plansLoading" class="flex justify-center py-12">
+              <div class="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
+            </div>
+
+            <!-- Plans Grid -->
+            <div v-else-if="allPlans && allPlans.length > 0" class="grid md:grid-cols-2 gap-6">
               <button
-                @click="selectType('physical')"
+                v-for="plan in allPlans"
+                :key="plan._id"
+                @click="selectPlan(plan)"
                 :class="[
-                  'relative p-8 rounded-3xl border-2 transition-all duration-300 text-left',
-                  selectedType === 'physical'
-                    ? 'border-blue-600 bg-gradient-to-br from-blue-50 to-blue-100 shadow-2xl scale-105'
+                  'relative p-6 rounded-3xl border-2 transition-all duration-300 text-left',
+                  selectedPlan?._id === plan._id
+                    ? plan.consultationType === 'physical'
+                      ? 'border-blue-600 bg-gradient-to-br from-blue-50 to-blue-100 shadow-2xl scale-105'
+                      : 'border-purple-600 bg-gradient-to-br from-purple-50 to-purple-100 shadow-2xl scale-105'
                     : 'border-slate-200 hover:border-blue-300 hover:shadow-lg'
                 ]"
               >
                 <div class="flex items-start gap-4">
                   <div :class="[
                     'w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-all',
-                    selectedType === 'physical' ? 'bg-blue-200' : 'bg-slate-100'
+                    selectedPlan?._id === plan._id
+                      ? plan.consultationType === 'physical' ? 'bg-blue-200' : 'bg-purple-200'
+                      : 'bg-slate-100'
                   ]">
-                    🏥
+                    {{ plan.consultationType === 'physical' ? '🏥' : '💻' }}
                   </div>
                   <div class="flex-1">
-                    <h3 class="font-bold text-xl text-slate-900 mb-2">Physical Visit</h3>
-                    <p class="text-sm text-slate-600 mb-4">In-person consultation at clinic</p>
-                    <p class="text-3xl font-black text-blue-600">
-                      ₦{{ settings?.physicalConsultationFee?.toLocaleString() || '—' }}
-                    </p>
-                  </div>
-                  <transition name="scale">
-                    <svg v-if="selectedType === 'physical'" class="w-8 h-8 text-blue-600 absolute top-6 right-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                  </transition>
-                </div>
-              </button>
+                    <h3 class="font-bold text-lg text-slate-900 mb-1">{{ plan.name }}</h3>
+                    <p class="text-sm text-slate-600 mb-2">{{ plan.description }}</p>
+                    
+                    <!-- Plan Details -->
+                    <div class="flex items-center gap-3 mb-3 text-xs text-slate-600">
+                      <span class="flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ plan.duration }} mins
+                      </span>
+                      <span v-if="plan.consultationType === 'physical'" class="flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                        </svg>
+                        {{ getAvailableDaysText(plan.availableDays) }}
+                      </span>
+                    </div>
 
-              <!-- Virtual -->
-              <button
-                @click="selectType('virtual')"
-                :class="[
-                  'relative p-8 rounded-3xl border-2 transition-all duration-300 text-left',
-                  selectedType === 'virtual'
-                    ? 'border-purple-600 bg-gradient-to-br from-purple-50 to-purple-100 shadow-2xl scale-105'
-                    : 'border-slate-200 hover:border-purple-300 hover:shadow-lg'
-                ]"
-              >
-                <div class="flex items-start gap-4">
-                  <div :class="[
-                    'w-16 h-16 rounded-2xl flex items-center justify-center text-3xl transition-all',
-                    selectedType === 'virtual' ? 'bg-purple-200' : 'bg-slate-100'
-                  ]">
-                    💻
-                  </div>
-                  <div class="flex-1">
-                    <h3 class="font-bold text-xl text-slate-900 mb-2">Virtual Call</h3>
-                    <p class="text-sm text-slate-600 mb-4">Video/Voice consultation online</p>
-                    <p class="text-3xl font-black text-purple-600">
-                      ₦{{ settings?.virtualConsultationFee?.toLocaleString() || '—' }}
+                    <p :class="[
+                      'text-3xl font-black',
+                      plan.consultationType === 'physical' ? 'text-blue-600' : 'text-purple-600'
+                    ]">
+                      ₦{{ plan.price.toLocaleString() }}
                     </p>
                   </div>
                   <transition name="scale">
-                    <svg v-if="selectedType === 'virtual'" class="w-8 h-8 text-purple-600 absolute top-6 right-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg 
+                      v-if="selectedPlan?._id === plan._id" 
+                      :class="[
+                        'w-8 h-8 absolute top-6 right-6',
+                        plan.consultationType === 'physical' ? 'text-blue-600' : 'text-purple-600'
+                      ]" 
+                      fill="none" 
+                      stroke="currentColor" 
+                      viewBox="0 0 24 24"
+                    >
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                     </svg>
                   </transition>
                 </div>
+
+                <!-- Availability Badge -->
+                <div v-if="plan.availableTimeRange" class="mt-4 pt-4 border-t border-slate-200">
+                  <span class="inline-flex items-center gap-1 px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-xs font-medium">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3"></path>
+                    </svg>
+                    {{ plan.availableTimeRange }}
+                  </span>
+                </div>
               </button>
+            </div>
+
+            <!-- No Plans Available -->
+            <div v-else class="text-center py-12">
+              <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+              </div>
+              <p class="text-slate-600">No consultation plans available at the moment</p>
             </div>
           </div>
 
@@ -165,6 +193,20 @@
             <div class="text-center mb-6">
               <h2 class="text-2xl font-bold text-slate-900 mb-3">Select Date & Time</h2>
               <p class="text-slate-600">Choose your preferred appointment slot</p>
+            </div>
+
+            <!-- Selected Plan Summary -->
+            <div v-if="selectedPlan" class="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-4 border border-slate-200">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="text-2xl">{{ selectedPlan.consultationType === 'physical' ? '🏥' : '💻' }}</div>
+                  <div>
+                    <p class="font-bold text-slate-900">{{ selectedPlan.name }}</p>
+                    <p class="text-sm text-slate-600">{{ selectedPlan.duration }} minutes</p>
+                  </div>
+                </div>
+                <p class="text-xl font-bold text-blue-600">₦{{ selectedPlan.price.toLocaleString() }}</p>
+              </div>
             </div>
 
             <!-- Calendar -->
@@ -202,12 +244,12 @@
                   v-for="(day, idx) in calendarDays"
                   :key="idx"
                   @click="selectDate(day)"
-                  :disabled="!day || day.isPast || !day.isEnabled"
+                  :disabled="!day || !day.isEnabled"
                   :class="[
-                    'aspect-square rounded-xl text-sm font-medium transition-all duration-300',
+                    'aspect-square rounded-xl text-lg font-medium transition-all duration-300',
                     !day ? 'invisible' :
-                    day.isPast || !day.isEnabled ? 'bg-slate-50 text-slate-300 cursor-not-allowed' :
-                    selectedDate === day.dateString ? 'bg-gradient-to-br from-blue-600 to-purple-600 text-white shadow-lg scale-110' :
+                    !day.isEnabled ? 'bg-slate-50 text-slate-300 cursor-not-allowed' :
+                    selectedDate === day.dateString ? 'bg-gray-800 text-white shadow-lg scale-110' :
                     'bg-slate-50 hover:bg-blue-50 hover:text-blue-600 hover:scale-105'
                   ]"
                 >
@@ -236,11 +278,12 @@
                   </button>
                 </div>
 
-                <!-- Time Slots -->
+                <!-- Loading Time Slots -->
                 <div v-if="availLoading" class="flex justify-center py-12">
                   <div class="w-12 h-12 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin"></div>
                 </div>
 
+                <!-- No Time Slots -->
                 <div v-else-if="filteredTimeSlots.length === 0" class="text-center py-12">
                   <div class="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <svg class="w-8 h-8 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -250,6 +293,7 @@
                   <p class="text-slate-600">No available slots for this period</p>
                 </div>
 
+                <!-- Time Slots Grid -->
                 <div v-else>
                   <h3 class="font-bold text-lg text-slate-900 mb-3">Available Slots</h3>
                   <div class="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-80 overflow-y-auto">
@@ -270,32 +314,22 @@
                 </div>
 
                 <!-- Virtual Mode Selection -->
-                <div v-if="selectedType === 'virtual' && selectedSlot" class="pt-6 border-t border-slate-200">
+                <div v-if="selectedPlan?.consultationType === 'virtual' && selectedSlot" class="pt-6 border-t border-slate-200">
                   <h3 class="font-bold text-lg text-slate-900 mb-4">Consultation Mode</h3>
                   <div class="grid grid-cols-2 gap-4">
                     <button
-                      @click="consultationMode = 'video'"
+                      v-for="mode in selectedPlan.consultationModes"
+                      :key="mode"
+                      @click="consultationMode = mode"
                       :class="[
                         'p-6 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-3',
-                        consultationMode === 'video'
+                        consultationMode === mode
                           ? 'border-purple-600 bg-gradient-to-br from-purple-50 to-purple-100 shadow-lg scale-105'
                           : 'border-slate-200 hover:border-purple-300 hover:shadow-md'
                       ]"
                     >
-                      <div class="text-3xl">📹</div>
-                      <span class="font-semibold text-slate-900">Video Call</span>
-                    </button>
-                    <button
-                      @click="consultationMode = 'voice'"
-                      :class="[
-                        'p-6 rounded-2xl border-2 transition-all duration-300 flex flex-col items-center gap-3',
-                        consultationMode === 'voice'
-                          ? 'border-purple-600 bg-gradient-to-br from-purple-50 to-purple-100 shadow-lg scale-105'
-                          : 'border-slate-200 hover:border-purple-300 hover:shadow-md'
-                      ]"
-                    >
-                      <div class="text-3xl">🎤</div>
-                      <span class="font-semibold text-slate-900">Voice Call</span>
+                      <div class="text-3xl">{{ mode === 'video' ? '📹' : '🎤' }}</div>
+                      <span class="font-semibold text-slate-900 capitalize">{{ mode }} Call</span>
                     </button>
                   </div>
                 </div>
@@ -317,17 +351,20 @@
 
             <div class="bg-gradient-to-br from-slate-50 to-blue-50 rounded-2xl p-8 border border-slate-200">
               <div class="grid gap-6">
+                <!-- Plan Details -->
                 <div class="flex items-center gap-4">
                   <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm text-2xl">
-                    {{ selectedType === 'physical' ? '🏥' : '💻' }}
+                    {{ selectedPlan?.consultationType === 'physical' ? '🏥' : '💻' }}
                   </div>
                   <div>
-                    <p class="text-xs text-slate-600 font-medium uppercase tracking-wide">Type</p>
-                    <p class="font-bold text-slate-900 capitalize">{{ selectedType }} Visit</p>
+                    <p class="text-xs text-slate-600 font-medium uppercase tracking-wide">Plan</p>
+                    <p class="font-bold text-slate-900">{{ selectedPlan?.name }}</p>
+                    <p class="text-sm text-slate-600">{{ selectedPlan?.duration }} minutes</p>
                   </div>
                 </div>
 
-                <div v-if="selectedType === 'virtual'" class="flex items-center gap-4">
+                <!-- Consultation Mode (for virtual) -->
+                <div v-if="selectedPlan?.consultationType === 'virtual'" class="flex items-center gap-4">
                   <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm text-2xl">
                     {{ consultationMode === 'video' ? '📹' : '🎤' }}
                   </div>
@@ -337,6 +374,7 @@
                   </div>
                 </div>
 
+                <!-- Date -->
                 <div class="flex items-center gap-4">
                   <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm">
                     <svg class="w-7 h-7 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -349,6 +387,7 @@
                   </div>
                 </div>
 
+                <!-- Time -->
                 <div class="flex items-center gap-4">
                   <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm">
                     <svg class="w-7 h-7 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,7 +400,8 @@
                   </div>
                 </div>
 
-                <div v-if="selectedType === 'physical'" class="flex items-center gap-4">
+                <!-- Location (for physical) -->
+                <div v-if="selectedPlan?.consultationType === 'physical'" class="flex items-center gap-4">
                   <div class="w-14 h-14 bg-white rounded-xl flex items-center justify-center shadow-sm text-2xl">
                     📍
                   </div>
@@ -371,11 +411,12 @@
                   </div>
                 </div>
 
+                <!-- Total Amount -->
                 <div class="pt-6 border-t border-slate-200 flex items-center justify-between">
                   <div>
                     <p class="text-sm text-slate-600 font-medium mb-1">Total Amount</p>
                     <p class="text-4xl font-black bg-gray-800 bg-clip-text text-transparent">
-                      ₦{{ consultationPrice.toLocaleString() }}
+                      ₦{{ selectedPlan?.price.toLocaleString() }}
                     </p>
                   </div>
                   <div class="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full text-sm font-semibold">
@@ -388,6 +429,7 @@
               </div>
             </div>
 
+            <!-- Important Information -->
             <div class="bg-blue-50 rounded-2xl p-6 border border-blue-200">
               <h4 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
                 <svg class="w-5 h-5 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
@@ -402,13 +444,13 @@
                   </svg>
                   <span>Payment confirmation will be shown after transaction</span>
                 </li>
-                <li v-if="selectedType === 'virtual'" class="flex items-start gap-2">
+                <li v-if="selectedPlan?.consultationType === 'virtual'" class="flex items-start gap-2">
                   <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                   </svg>
                   <span>Meeting link will be generated after payment</span>
                 </li>
-                <li v-if="selectedType === 'physical'" class="flex items-start gap-2">
+                <li v-if="selectedPlan?.consultationType === 'physical'" class="flex items-start gap-2">
                   <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                   </svg>
@@ -418,174 +460,175 @@
             </div>
           </div>
         </transition>
-
         <!-- Navigation Buttons -->
-        <div class="flex gap-4 mt-8">
-          <button
-            v-if="currentStep > 1"
-            @click="previousStep"
-            :disabled="bookingLoading || initiating"
-            class="flex-1 py-4 border-2 border-slate-300 rounded-2xl font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-          >
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            Back
-          </button>
+    <div class="flex gap-4 mt-8">
+      <button
+        v-if="currentStep > 1"
+        @click="previousStep"
+        :disabled="bookingLoading || initiating"
+        class="flex-1 py-4 border-2 border-slate-300 rounded-2xl font-bold text-slate-700 hover:bg-slate-50 transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      >
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+        Back
+      </button>
 
-          <button
-            v-if="currentStep < 3"
-            @click="nextStep"
-            :disabled="!canProceed"
-            class="flex-1 py-4 bg-gray-800 text-white rounded-2xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
-          >
-            Continue
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-            </svg>
-          </button>
+      <button
+        v-if="currentStep < 3"
+        @click="nextStep"
+        :disabled="!canProceed"
+        class="flex-1 py-4 bg-gray-800 text-white rounded-2xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
+      >
+        Continue
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+        </svg>
+      </button>
 
-          <button
-            v-else
-            @click="handleBooking"
-            :disabled="bookingLoading || initiating"
-            class="flex-1 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-2xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
-          >
-            <svg v-if="bookingLoading || initiating" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+      <button
+        v-else
+        @click="handleBooking"
+        :disabled="bookingLoading || initiating"
+        class="flex-1 py-4 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-2xl font-bold shadow-lg hover:shadow-xl disabled:opacity-40 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2"
+      >
+        <svg v-if="bookingLoading || initiating" class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+        </svg>
+        <span v-if="bookingLoading">Creating...</span>
+        <span v-else-if="initiating">Processing...</span>
+        <span v-else>
+          <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+          </svg>
+          Proceed to Payment
+        </span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<transition name="modal">
+  <div v-if="showSuccessModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="closeSuccessModal">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-10 animate-scaleIn" @click.stop>
+      <div class="flex justify-center mb-6">
+        <div class="relative">
+          <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
             </svg>
-            <span v-if="bookingLoading">Creating...</span>
-            <span v-else-if="initiating">Processing...</span>
-            <span v-else>
-              <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-              </svg>
-              Proceed to Payment
-            </span>
-          </button>
+          </div>
+          <div class="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-20"></div>
         </div>
+      </div>
+
+      <h3 class="text-2xl font-bold text-slate-900 text-center mb-3">Payment Successful!</h3>
+      <p class="text-slate-600 text-center mb-8">Your consultation has been booked and confirmed.</p>
+
+      <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 mb-6 border border-green-200">
+        <div class="space-y-3">
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-slate-600 font-medium">Plan</span>
+            <span class="font-bold text-slate-900">{{ selectedPlan?.name }}</span>
+          </div>
+          <div class="flex justify-between items-center text-sm">
+            <span class="text-slate-600 font-medium">Date & Time</span>
+            <span class="font-bold text-slate-900 text-right">
+              {{ formattedSelectedDate }}<br />
+              {{ formatTimeSlot(selectedSlot?.startTime) }}
+            </span>
+          </div>
+          <div class="pt-3 border-t border-green-200 flex justify-between items-center">
+            <span class="font-bold text-slate-900">Amount Paid</span>
+            <span class="text-2xl font-bold text-green-600">₦{{ selectedPlan?.price.toLocaleString() }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="paymentCallbackData.meetLink && selectedPlan?.consultationType === 'virtual'" class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 mb-6 border border-purple-200">
+        <h4 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
+          <span class="text-2xl">💻</span>
+          Join Your Virtual Consultation
+        </h4>
+        <a
+          :href="paymentCallbackData.meetLink"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="block w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl font-semibold text-center hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-lg"
+        >
+          Join Google Meet
+        </a>
+      </div>
+
+      <button
+        @click="closeSuccessModal"
+        class="w-full py-4 bg-gray-800 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+      >
+        View My Appointments
+      </button>
+    </div>
+  </div>
+</transition>
+
+<!-- Processing Modal -->
+<transition name="modal">
+  <div v-if="processingPayment" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-10 text-center">
+      <div class="relative mb-6">
+        <div class="w-20 h-20 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
+      </div>
+      <h3 class="text-2xl font-bold text-slate-900 mb-3">Verifying Payment</h3>
+      <p class="text-slate-600">Please wait while we confirm your transaction...</p>
+    </div>
+  </div>
+</transition>
+
+<!-- Error Modal -->
+<transition name="modal">
+  <div v-if="showErrorModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="closeErrorModal">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-10" @click.stop>
+      <div class="flex justify-center mb-6">
+        <div class="w-24 h-24 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-lg">
+          <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>
+          </svg>
+        </div>
+      </div>
+
+      <h3 class="text-2xl font-bold text-slate-900 text-center mb-3">Payment Failed</h3>
+      <p class="text-slate-600 text-center mb-8">{{ errorMessage || 'Your payment could not be processed.' }}</p>
+
+      <div class="space-y-3">
+        <button
+          @click="retryPayment"
+          class="w-full py-4 bg-gray-800 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+        >
+          Try Again
+        </button>
+        <button
+          @click="closeErrorModal"
+          class="w-full py-4 border-2 border-slate-300 text-slate-700 rounded-2xl font-semibold hover:bg-slate-50 transition-all duration-300"
+        >
+          Go Back
+        </button>
       </div>
     </div>
-
-    <!-- Success Modal -->
-    <transition name="modal">
-      <div v-if="showSuccessModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="closeSuccessModal">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-10 animate-scaleIn" @click.stop>
-          <div class="flex justify-center mb-6">
-            <div class="relative">
-              <div class="w-24 h-24 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
-                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                </svg>
-              </div>
-              <div class="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-20"></div>
-            </div>
-          </div>
-
-          <h3 class="text-2xl font-bold text-slate-900 text-center mb-3">Payment Successful!</h3>
-          <p class="text-slate-600 text-center mb-8">Your consultation has been booked and confirmed.</p>
-
-          <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-6 mb-6 border border-green-200">
-            <div class="space-y-3">
-              <div class="flex justify-between items-center text-sm">
-                <span class="text-slate-600 font-medium">Type</span>
-                <span class="font-bold text-slate-900 capitalize">{{ selectedType }}</span>
-              </div>
-              <div class="flex justify-between items-center text-sm">
-                <span class="text-slate-600 font-medium">Date & Time</span>
-                <span class="font-bold text-slate-900 text-right">
-                  {{ formattedSelectedDate }}<br />
-                  {{ formatTimeSlot(selectedSlot?.startTime) }}
-                </span>
-              </div>
-              <div class="pt-3 border-t border-green-200 flex justify-between items-center">
-                <span class="font-bold text-slate-900">Amount Paid</span>
-                <span class="text-2xl font-bold text-green-600">₦{{ consultationPrice.toLocaleString() }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div v-if="paymentCallbackData.meetLink && selectedType === 'virtual'" class="bg-gradient-to-br from-purple-50 to-purple-100 rounded-2xl p-6 mb-6 border border-purple-200">
-            <h4 class="font-bold text-slate-900 mb-3 flex items-center gap-2">
-              <span class="text-2xl">💻</span>
-              Join Your Virtual Consultation
-            </h4>
-            <a
-              :href="paymentCallbackData.meetLink"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="block w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl font-semibold text-center hover:from-purple-700 hover:to-purple-800 transition-all duration-300 shadow-lg"
-            >
-              Join Google Meet
-            </a>
-          </div>
-
-          <button
-            @click="closeSuccessModal"
-            class="w-full py-4 bg-gray-800 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-          >
-            View My Appointments
-          </button>
-        </div>
-      </div>
-    </transition>
-
-    <!-- Processing Modal -->
-    <transition name="modal">
-      <div v-if="processingPayment" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-10 text-center">
-          <div class="relative mb-6">
-            <div class="w-20 h-20 border-4 border-blue-100 border-t-blue-600 rounded-full animate-spin mx-auto"></div>
-          </div>
-          <h3 class="text-2xl font-bold text-slate-900 mb-3">Verifying Payment</h3>
-          <p class="text-slate-600">Please wait while we confirm your transaction...</p>
-        </div>
-      </div>
-    </transition>
-
-    <!-- Error Modal -->
-    <transition name="modal">
-      <div v-if="showErrorModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4" @click="closeErrorModal">
-        <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-10" @click.stop>
-          <div class="flex justify-center mb-6">
-            <div class="w-24 h-24 bg-gradient-to-br from-red-400 to-red-600 rounded-full flex items-center justify-center shadow-lg">
-              <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"></path>
-              </svg>
-            </div>
-          </div>
-
-          <h3 class="text-2xl font-bold text-slate-900 text-center mb-3">Payment Failed</h3>
-          <p class="text-slate-600 text-center mb-8">{{ errorMessage || 'Your payment could not be processed.' }}</p>
-
-          <div class="space-y-3">
-            <button
-              @click="retryPayment"
-              class="w-full py-4 bg-gray-800 text-white rounded-2xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-            >
-              Try Again
-            </button>
-            <button
-              @click="closeErrorModal"
-              class="w-full py-4 border-2 border-slate-300 text-slate-700 rounded-2xl font-semibold hover:bg-slate-50 transition-all duration-300"
-            >
-              Go Back
-            </button>
-          </div>
-        </div>
-      </div>
-    </transition>
   </div>
-</template>
+</transition>
 
+</div>
+</template>
 <script setup lang="ts">
 import { ref, computed, watch, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
+import type { ConsultationPlan } from '@/api_factory/modules/consultation-plans'
 import { useGetSettings } from '@/composables/modules/public/useGetSettings'
 import { useCreateAppointment } from '@/composables/modules/appointments/useCreateAppointment'
 import { useGetAvailabilityByDate } from '@/composables/modules/public/useGetAvailabilityByDate'
 import { useInitiatePayment } from '@/composables/modules/payments/useInitiatePayment'
+import { useGetAllConsultationPlans } from '@/composables/modules/consultation-plans/useGetAllConsultationPlans'
 import { useUser } from '@/composables/modules/auth/user'
 
 definePageMeta({
@@ -596,21 +639,24 @@ definePageMeta({
 const router = useRouter()
 const route = useRoute()
 const { user } = useUser()
+
+// Composables
 const { loading: initiating, initiatePayment } = useInitiatePayment()
 const { settings, loading: settingsLoading } = useGetSettings()
 const { createAppointment, loading: bookingLoading } = useCreateAppointment()
 const { availability, loading: availLoading, getAvailabilityByDate } = useGetAvailabilityByDate()
+const { plans: allPlans, loading: plansLoading, getAllPlans } = useGetAllConsultationPlans()
 
-// Doctor info (from settings or hardcoded)
+// Doctor info
 const doctorName = computed(() => 'Dr. Nwachi Patrick')
 const doctorSpecialty = computed(() => 'General Practitioner')
 const doctorRating = computed(() => '4.8')
-const doctorExperience = computed(() => '15+ years')
-const doctorBio = computed(() => 'Dr. Nwachi Patrick is a dedicated healthcare professional with over 15 years of experience in providing comprehensive medical care. He specializes in preventive medicine and patient-centered care.')
+const doctorExperience = computed(() => '24+ years')
+const doctorBio = computed(() => 'Dr. Nwachi Patrick is a dedicated healthcare professional with over 24 years of experience providing comprehensive medical care. He specialises in family medicine (general practice) and lifestyle medicine. He also offers a range of therapy and counselling services.')
 
 // State
 const currentStep = ref(1)
-const selectedType = ref<'physical' | 'virtual' | null>(null)
+const selectedPlan = ref<ConsultationPlan | null>(null)
 const selectedDate = ref<string | null>(null)
 const selectedSlot = ref<{ startTime: string; endTime: string } | null>(null)
 const selectedPeriod = ref<'morning' | 'afternoon' | 'evening'>('morning')
@@ -626,12 +672,12 @@ const errorMessage = ref('')
 const paymentCallbackData = ref<any>({})
 
 const stepDescriptions = [
-  'Select your preferred consultation type',
+  'Select your preferred consultation plan',
   'Pick a date and time that works for you',
   'Review and complete your booking'
 ]
 
-// Calendar computation
+// Computed
 const currentMonthYear = computed(() => {
   return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(currentMonthDate.value)
 })
@@ -648,15 +694,25 @@ const calendarDays = computed(() => {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
 
+  // Empty cells for days before month starts
   for (let i = 0; i < startingDayOfWeek; i++) {
     days.push(null)
   }
 
+  // Days of the month
   for (let day = 1; day <= daysInMonth; day++) {
     const date = new Date(year, month, day)
     const dateString = date.toISOString().split('T')[0]
+    const dayOfWeek = date.getDay()
+    
+    // Check if date is in the past
     const isPast = date < today
-    const isEnabled = !isPast
+    
+    // Check if day is enabled based on selected plan
+    let isEnabled = !isPast
+    if (selectedPlan.value && selectedPlan.value.availableDays) {
+      isEnabled = isEnabled && selectedPlan.value.availableDays.includes(dayOfWeek)
+    }
 
     days.push({
       day,
@@ -674,7 +730,7 @@ const filteredTimeSlots = computed(() => {
   if (!availability.value || !Array.isArray(availability.value.availability)) return []
 
   const match = availability.value.availability.find(
-    (a: any) => a.consultationType === selectedType.value && a.isAvailable === true
+    (a: any) => a.consultationType === selectedPlan.value?.consultationType && a.isAvailable === true
   )
 
   if (!match || !Array.isArray(match.timeSlots)) return []
@@ -691,13 +747,6 @@ const filteredTimeSlots = computed(() => {
   })
 })
 
-const consultationPrice = computed(() => {
-  if (!settings.value || !selectedType.value) return 0
-  return selectedType.value === 'physical'
-    ? settings.value.physicalConsultationFee
-    : settings.value.virtualConsultationFee
-})
-
 const formattedSelectedDate = computed(() => {
   if (!selectedDate.value) return ''
   const date = new Date(selectedDate.value)
@@ -710,16 +759,28 @@ const formattedSelectedDate = computed(() => {
 })
 
 const canProceed = computed(() => {
-  if (currentStep.value === 1) return selectedType.value !== null
+  if (currentStep.value === 1) return selectedPlan.value !== null
   if (currentStep.value === 2) return selectedDate.value !== null && selectedSlot.value !== null
   return true
 })
 
 // Methods
-const selectType = (type: 'physical' | 'virtual') => {
-  selectedType.value = type
+const getAvailableDaysText = (days: number[]) => {
+  const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  if (days.length === 7) return 'Any day'
+  if (days.length === 0) return 'No days'
+  return days.map(d => dayNames[d]).join(', ')
+}
+
+const selectPlan = (plan: ConsultationPlan) => {
+  selectedPlan.value = plan
   selectedDate.value = null
   selectedSlot.value = null
+  
+  // Set default consultation mode based on plan
+  if (plan.consultationModes && plan.consultationModes.length > 0) {
+    consultationMode.value = plan.consultationModes[0] as 'video' | 'voice'
+  }
 }
 
 const previousMonth = () => {
@@ -767,23 +828,28 @@ const previousStep = () => {
 }
 
 const handleBooking = async () => {
-  if (!selectedType.value || !selectedDate.value || !selectedSlot.value) return
+  if (!selectedPlan.value || !selectedDate.value || !selectedSlot.value) return
 
   try {
-    const timeSlot = `${selectedSlot.value.startTime} - ${selectedSlot.value.endTime}`
+    const timeSlot = `${selectedSlot.value.startTime}-${selectedSlot.value.endTime}`
 
+    // Create appointment with plan ID
     const appointmentPayload: any = {
-      consultationType: selectedType.value,
+      planId: selectedPlan.value._id,
+      consultationType: selectedPlan.value.consultationType,
       date: selectedDate.value,
       timeSlot: timeSlot,
-      price: consultationPrice.value
+      price: selectedPlan.value.price,
+      duration: selectedPlan.value.duration
     }
 
-    if (selectedType.value === 'virtual') {
+    // Add consultation mode for virtual consultations
+    if (selectedPlan.value.consultationType === 'virtual') {
       appointmentPayload.consultationMode = consultationMode.value
     }
 
-    if (selectedType.value === 'physical' && settings.value?.clinicLocation) {
+    // Add location for physical consultations
+    if (selectedPlan.value.consultationType === 'physical' && settings.value?.clinicLocation) {
       appointmentPayload.location = settings.value.clinicLocation
     }
 
@@ -793,15 +859,16 @@ const handleBooking = async () => {
       throw new Error('Failed to create appointment')
     }
 
+    // Initiate payment
     const paymentPayload = {
       appointmentId: appointmentResult._id,
-      amount: consultationPrice.value,
+      amount: selectedPlan.value.price,
       paymentMethod: 'Paystack' as const,
       email: user?.value?.email || '',
       phone: user?.value?.phone || '+2348012345678',
       address: user?.value?.address || settings.value?.clinicLocation || 'Not provided',
       customerName: `${user?.value?.firstName || ''} ${user?.value?.lastName || ''}`.trim() || 'Customer',
-      description: `Payment for ${selectedType.value} consultation`
+      description: `Payment for ${selectedPlan.value.name}`
     }
 
     const paymentResult = await initiatePayment(paymentPayload)
@@ -810,6 +877,7 @@ const handleBooking = async () => {
       throw new Error('Failed to initiate payment')
     }
 
+    // Redirect to payment page
     window.location.href = paymentResult.authorization_url
 
   } catch (error: any) {
@@ -841,7 +909,7 @@ const handlePaymentCallback = async () => {
       }
       showSuccessModal.value = true
     } else {
-      errorMessage.value = 'Payment failed. Please try again.'
+      errorMessage.value = route.query.message as string || 'Payment failed. Please try again.'
       showErrorModal.value = true
     }
   } catch (error: any) {
@@ -867,23 +935,27 @@ const retryPayment = () => {
   currentStep.value = 3
 }
 
-// Fetch availability when date/type changes
-watch([selectedDate, selectedType], async () => {
-  if (selectedDate.value && selectedType.value) {
+// Watchers
+watch([selectedDate, selectedPlan], async () => {
+  if (selectedDate.value && selectedPlan.value) {
     await getAvailabilityByDate({
       date: selectedDate.value,
-      consultationType: selectedType.value
+      consultationType: selectedPlan.value.consultationType
     })
   }
 })
 
-onMounted(() => {
+// Lifecycle
+onMounted(async () => {
+  // Fetch all consultation plans
+  await getAllPlans()
+  
+  // Handle payment callback
   if (route.query.status && (route.query.reference || route.query.trxref)) {
     handlePaymentCallback()
   }
 })
 </script>
-
 <style scoped>
 @keyframes fadeIn {
   from {
