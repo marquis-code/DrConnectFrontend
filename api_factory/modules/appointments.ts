@@ -11,13 +11,28 @@ export const appointments_api = {
     return GATEWAY_ENDPOINT.get(url)
   },
 
+  // createAppointment: (payload: {
+  //   consultationType: "physical" | "virtual"
+  //   consultationMode?: "voice" | "video"
+  //   date: string
+  //   timeSlot: string
+  //   location?: string
+  //   price: number
+  // }) => {
+  //   const url = "/appointments"
+  //   return GATEWAY_ENDPOINT.post(url, payload)
+  // },
+
   createAppointment: (payload: {
-    consultationType: "physical" | "virtual"
-    consultationMode?: "voice" | "video"
+    planId: string
+    consultationType: "first_contact" | "follow_up" | "medical_review" | "emergency" | "routine_checkup" | "prescription_refill" | "lab_result_review" | "second_opinion" | "mental_health" | "chronic_disease_management" | "prenatal_postnatal" | "pediatric" | "geriatric" | "nutrition_counseling" | "pre_operative" | "post_operative" | "procedure_consultation" | "health_screening" | "wellness_consultation" | "vaccination" | "sick_note" | "referral"
+    consultationCategory: "physical" | "virtual"
+    consultationMode?: "voice" | "video" | "in_person"
     date: string
     timeSlot: string
     location?: string
     price: number
+    duration: number
   }) => {
     const url = "/appointments"
     return GATEWAY_ENDPOINT.post(url, payload)
@@ -42,4 +57,8 @@ export const appointments_api = {
     const url = "/appointments/time-slots"
     return GATEWAY_ENDPOINT.get(url, { params: { date, consultationType } })
   },
+  getPatientStatus: () => {
+    const url = "/appointments/patient-status"
+    return GATEWAY_ENDPOINT.get(url)
+  }
 }
