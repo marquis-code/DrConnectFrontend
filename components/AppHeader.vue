@@ -8,7 +8,7 @@
           <div class="flex justify-between items-center h-16 lg:h-20">
             <!-- Logo -->
             <NuxtLink to="/" class="text-lg font-bold text-gray-900">
-              Doctor Dey Consulting
+             <img src="@/assets/img/logo.jpg" class="h-10 w-auto"  />
             </NuxtLink>
 
             <!-- Desktop Navigation -->
