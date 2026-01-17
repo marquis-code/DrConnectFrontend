@@ -16,7 +16,7 @@
           <div class="inline-block mb-4">
             <span class="text-gray-600 text-sm font-semibold tracking-wider uppercase">Leadership</span>
           </div>
-          <h2 class="text-4xl sm:text-4xl lg:text-6xl font-light text-gray-900 leading-tight mb-6">
+          <h2 class="text-4xl sm:text-5xl lg:text-6xl font-light text-gray-900 leading-tight mb-6">
             Meet Our <span class="font-semibold">Founder</span>
           </h2>
           <p class="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
@@ -61,7 +61,7 @@
               <div class="lg:col-span-3 p-8 lg:p-12 space-y-8">
                 <!-- Credentials -->
                 <div>
-                  <h3 class="text-xl font-light text-gray-900 mb-3">Dr Patrick Nwachi</h3>
+                  <h3 class="text-3xl font-light text-gray-900 mb-3">Dr Patrick Nwachi</h3>
                   <p class="text-lg text-gray-600 mb-4">MBBS, FMCFM, DipIBLM</p>
                   
                   <div class="flex flex-wrap gap-2">
@@ -111,7 +111,7 @@
                 <div class="pt-6">
                   <NuxtLink
                     to="/register"
-                    class="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-8 py-3 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group">
+                    class="inline-flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white px-8 py-4 rounded-xl font-semibold transition-all duration-300 shadow-lg hover:shadow-xl group">
                     <span>Book Consultation</span>
                     <svg class="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
@@ -125,7 +125,7 @@
 
         <!-- Future Expansion Notice -->
         <div class="mt-16 text-center">
-          <div class="inline-flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-8 py-3 shadow-md">
+          <div class="inline-flex items-center gap-3 bg-white border border-gray-200 rounded-2xl px-8 py-4 shadow-md">
             <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
@@ -151,7 +151,7 @@
           <div class="inline-block mb-4">
             <span class="text-gray-400 text-sm font-semibold tracking-wider uppercase">Flexible & Affordable</span>
           </div>
-          <h2 class="text-4xl sm:text-4xl lg:text-6xl font-light leading-tight mb-6">
+          <h2 class="text-4xl sm:text-5xl lg:text-6xl font-light leading-tight mb-6">
             Choose Your <span class="font-semibold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Care Plan</span>
           </h2>
           <p class="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
@@ -241,7 +241,7 @@
               <div class="flex items-start justify-between mb-6">
                 <div class="flex-1">
                   <div class="flex items-center gap-3 mb-2">
-                    <span class="text-xl">{{ group.icon }}</span>
+                    <span class="text-3xl">{{ group.icon }}</span>
                     <div>
                       <h3 class="text-xl font-semibold text-white">{{ group.title }}</h3>
                       <p class="text-sm text-gray-400">{{ group.subtitle }}</p>
@@ -262,7 +262,7 @@
               <p class="text-gray-300 text-sm mb-6 leading-relaxed">{{ group.description }}</p>
 
               <!-- Plans Dropdown -->
-              <!-- <div class="space-y-3 mb-6">
+              <div class="space-y-3 mb-6">
                 <label class="block text-sm font-medium text-gray-400 mb-2">Select Duration:</label>
                 <select
                   v-model="selectedPlans[group.type]"
@@ -276,20 +276,7 @@
                     {{ plan.duration }} min - {{ formatPrice(plan.price) }}
                   </option>
                 </select>
-              </div> -->
-              <div class="space-y-3 mb-6">
-              <label class="block text-sm font-medium text-gray-400 mb-2">Select Duration:</label>
-              <UiSelectInput
-                v-model="selectedPlans[group.type]"
-                :label="'Duration'"
-                :options="group.plans.map((plan: ConsultationPlan) => ({
-                  label: `${plan.duration} min - ${formatPrice(plan.price)}`,
-                  value: plan._id
-                }))"
-                :placeholder="'Choose duration'"
-                position="standalone"
-              />
-            </div>
+              </div>
 
               <!-- Features -->
               <div class="space-y-2.5 mb-6 bg-gray-900/30 rounded-xl p-4">
@@ -308,7 +295,7 @@
               <!-- Selected Plan Details -->
               <div v-if="getSelectedPlan(group.type)" class="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-xl p-4 mb-6 border border-blue-500/20">
                 <div class="flex items-baseline justify-between mb-2">
-                  <span class="text-xl font-bold text-white">
+                  <span class="text-3xl font-bold text-white">
                     {{ formatPrice(getSelectedPlan(group.type).price) }}
                   </span>
                   <span class="text-sm text-gray-400">
@@ -323,7 +310,7 @@
               <!-- CTA Button -->
               <NuxtLink
                 to="/register"
-                class="w-full block text-center bg-black text-white py-3.5 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30"
+                class="w-full block text-center bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-3.5 rounded-xl font-semibold transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30"
               >
                 Book Now
               </NuxtLink>
@@ -332,7 +319,7 @@
 
           <!-- Additional Info -->
           <div class="mt-16 text-center">
-            <div class="inline-flex items-center gap-3 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl px-8 py-3">
+            <div class="inline-flex items-center gap-3 bg-gray-800/50 backdrop-blur-sm border border-gray-700/50 rounded-2xl px-8 py-4">
               <svg class="w-6 h-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
               </svg>
@@ -348,11 +335,11 @@
               <!-- Header -->
               <div class="flex items-center justify-between mb-8">
                 <div class="flex items-center gap-4">
-                  <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-xl">
+                  <div class="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-3xl">
                     🏥
                   </div>
                   <div>
-                    <h3 class="text-xl font-semibold text-white mb-1">In-Person Consultation</h3>
+                    <h3 class="text-3xl font-semibold text-white mb-1">In-Person Consultation</h3>
                     <p class="text-gray-400">Complete examination at our clinic</p>
                   </div>
                 </div>
@@ -362,7 +349,7 @@
               <div class="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-2xl p-6 mb-8 border border-blue-500/20">
                 <div class="flex items-baseline justify-between">
                   <div>
-                    <span class="text-4xl font-bold text-white">
+                    <span class="text-5xl font-bold text-white">
                       {{ formatPrice(physicalPlans[0].price) }}
                     </span>
                     <span class="text-gray-400 ml-3">per session</span>
@@ -410,7 +397,7 @@
               <!-- CTA -->
               <NuxtLink
                 to="/register"
-                class="w-full block text-center bg-black text-white py-3 rounded-xl text-lg font-semibold transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30"
+                class="w-full block text-center bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white py-4 rounded-xl text-lg font-semibold transition-all duration-300 shadow-lg shadow-blue-500/20 hover:shadow-xl hover:shadow-blue-500/30"
               >
                 Schedule Clinic Visit
               </NuxtLink>
@@ -433,7 +420,7 @@
     <section id="contact" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24">
       <div class="grid lg:grid-cols-2 gap-12 lg:gap-16">
         <div class="space-y-6">
-          <h2 class="text-4xl lg:text-4xl font-normal text-gray-900 leading-tight">Get in Touch</h2>
+          <h2 class="text-4xl lg:text-5xl font-normal text-gray-900 leading-tight">Get in Touch</h2>
           <div class="border-t border-gray-300 pt-6">
             <p class="text-base lg:text-lg text-gray-700 leading-relaxed mb-6">
               Ready to take control of your health? Contact us today to schedule your consultation with our expert medical team.
@@ -521,7 +508,7 @@
             <button 
               type="submit" 
               :disabled="loading"
-              class="w-full bg-gray-900 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-25 text-white py-3 text-lg transition-colors rounded-xl"
+              class="w-full bg-gray-900 hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-25 text-white py-4 text-lg transition-colors rounded-xl"
             >
               {{ loading ? 'Processing...' : 'Send Message' }}
             </button>
